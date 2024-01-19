@@ -1,42 +1,45 @@
-name: CI
+# When a user creates an issue that is actually a support request, it should
+# be closed with a friendly comment.
+#
+# This triggers on an issue being labelled with the `support` tag.
+
+name: 'Support Requests'
+
 on:
-  push:
-    branches: [ main ]
+  issues:
+    types: [labeled, unlabeled, reopened]
+
+permissions:
+  issues: write
 
 jobs:
-  build:
-    runs-on: ubuntu-20.04
-
+  action:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-
-      used to cache dependencies with a timeout
-      - name: Get Date
-        id: get-date
-        run: |
-          echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
-        shell: bash
-
-      - name: Cache Buildozer global directory
-        uses: actions/cache@v2
+      - uses: dessant/support-requests@v4
         with:
-          path: .buildozer_global
-          key: buildozer-global-${{ hashFiles('buildozer.spec') }} # Replace with your path
+          github-token: ${{ github.token }}
+          support-label: 'support'
+          issue-comment: >
+            👋 @{issue-author},
+            
+            Sorry to hear you are having difficulties with Kivy's python-for-android; Kivy unites a number of different technologies, so building apps can be temperamental.
 
-      - uses: actions/cache@v2
-        with:
-          path: .buildozer
-          key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
+            We try to use GitHub issues only to track work for developers to do to fix bugs and add new features to python-for-android. 
+            
+            However, this issue appears to be a support request. Please use our
+            [support channels](https://github.com/kivy/python-for-android/blob/master/CONTACT.md)
+            to get help with the project.
 
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          command: buildozer android debug
-          buildozer_version: stable
+            If you're having trouble installing python-for-android,
+            please see our [quickstart](https://python-for-android.readthedocs.io/en/latest/quickstart) guide.
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: package
-          path: ${{ steps.buildozer.outputs.filename }}
+            If you're having trouble using python-for-android,
+            please see our [troubleshooting guide](https://python-for-android.readthedocs.io/en/latest/troubleshooting) 
+            and [FAQ](https://github.com/kivy/python-for-android/blob/master/FAQ.md).
+
+            Let us know if this comment was made in error, and we'll be happy
+            to reopen the issue.
+
+          close-issue: true
+          lock-issue: false
