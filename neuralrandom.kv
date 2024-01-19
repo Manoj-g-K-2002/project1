@@ -1,0 +1,13 @@
+# neuralrandom.kv
+<MyRoot>:
+    orientation: 'vertical'
+
+    Label:
+        text: 'Global Knowledge'
+        font_size: 64
+        color: 0.92, 0.45, 0
+
+    Button:
+        text: 'Legend'
+        font_size: 32
+        on_press: root.generate_number(self)
